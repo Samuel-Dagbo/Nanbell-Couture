@@ -1,4 +1,5 @@
 const ORDER_STEPS = [
+  "Pending Confirmation",
   "Not Started",
   "In Progress",
   "Almost Done",
@@ -13,6 +14,14 @@ const statusIndex = (status, transactionCompleted) => {
 };
 
 const OrderTimeline = ({ status, transactionCompleted = false }) => {
+  if (status === "Cancelled") {
+    return (
+      <div className="mt-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700">
+        Order Cancelled
+      </div>
+    );
+  }
+
   const activeIndex = statusIndex(status, transactionCompleted);
 
   return (
@@ -35,4 +44,3 @@ const OrderTimeline = ({ status, transactionCompleted = false }) => {
 };
 
 export default OrderTimeline;
-

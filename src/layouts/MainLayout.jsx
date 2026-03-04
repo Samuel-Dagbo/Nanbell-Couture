@@ -37,6 +37,7 @@ const MainLayout = ({ children }) => {
               <NavLink to="/" className={navLinkClass}>Home</NavLink>
               <NavLink to="/templates" className={navLinkClass}>Designs</NavLink>
               <NavLink to="/shop" className={navLinkClass}>Shop</NavLink>
+              {user?.role === "customer" && <NavLink to="/cart" className={navLinkClass}>Cart</NavLink>}
               <NavLink to="/about" className={navLinkClass}>About</NavLink>
               <NavLink to="/contact" className={navLinkClass}>Contact</NavLink>
               {!user && <NavLink to="/login" className={navLinkClass}>Login</NavLink>}
@@ -65,6 +66,7 @@ const MainLayout = ({ children }) => {
             <NavLink to="/" className={mobileNavLinkClass} onClick={closeMenu}>Home</NavLink>
             <NavLink to="/templates" className={mobileNavLinkClass} onClick={closeMenu}>Designs</NavLink>
             <NavLink to="/shop" className={mobileNavLinkClass} onClick={closeMenu}>Shop</NavLink>
+            {user?.role === "customer" && <NavLink to="/cart" className={mobileNavLinkClass} onClick={closeMenu}>Cart</NavLink>}
             <NavLink to="/about" className={mobileNavLinkClass} onClick={closeMenu}>About</NavLink>
             <NavLink to="/contact" className={mobileNavLinkClass} onClick={closeMenu}>Contact</NavLink>
             {!user && <NavLink to="/login" className={mobileNavLinkClass} onClick={closeMenu}>Login</NavLink>}
@@ -111,9 +113,10 @@ const MainLayout = ({ children }) => {
           <div>
             <h4 className="text-lg font-semibold">Contact</h4>
             <div className="mt-2 space-y-1 text-sm text-slate-600">
-              <p>Phone: +233 20 000 0000</p>
-              <p>Email: hello@nanbellcouture.com</p>
-              <p>Address: Accra, Ghana</p>
+              <p>Phone: +233 54 111 4579</p>
+              <p>Email: patiencekwegyina@gmail.com</p>
+              <p>Address: Takoradi, Ghana</p>
+              <p>Delivery: Nationwide across Ghana</p>
             </div>
           </div>
         </div>

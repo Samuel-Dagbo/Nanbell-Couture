@@ -5,7 +5,38 @@ import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { resolveImageUrl } from "../utils/image";
 
-const defaultOrder = { size: "", quantity: 1, notes: "" };
+const CART_KEY = "nanbell_cart";
+
+const getCart = () => {
+  try {
+    const raw = localStorage.getItem(CART_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (_e) {
+    return [];
+  }
+};
+
+const saveCart = (items) => {
+  localStorage.setItem(CART_KEY, JSON.stringify(items));
+};
+
+const addItemToCart = (item) => {
+  const cart = getCart();
+  const existing = cart.find((entry) => entry.shopItemId === item.shopItemId && entry.size === item.size && entry.notes === item.notes);
+  if (existing) {
+    existing.quantity += Number(item.quantity) || 1;
+    saveCart(cart);
+    return;
+  }
+  saveCart([
+    ...cart,
+    {
+      cartId: `${item.shopItemId}-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+      ...item
+    }
+  ]);
+};
 
 const ShopPage = () => {
   const { user } = useAuth();
@@ -13,62 +44,48 @@ const ShopPage = () => {
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [openOrderId, setOpenOrderId] = useState("");
-  const [orderForm, setOrderForm] = useState(defaultOrder);
+  const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
+    setCartCount(getCart().length);
     api.get("/shop-items")
       .then(({ data }) => setItems(data.filter((i) => i.available)))
       .finally(() => setLoading(false));
   }, []);
 
-  const onOrderClick = (shopItemId) => {
-    if (!user) {
-      showToast("Please login to place your order.");
-      navigate("/login");
-      return;
-    }
-
-    setOpenOrderId((prev) => (prev === shopItemId ? "" : shopItemId));
-  };
-
-  const placeOrder = async (shopItemId) => {
-    if (!user) {
-      showToast("Please login to place your order.");
-      navigate("/login");
-      return;
-    }
-
-    if (user.role !== "customer") {
-      showToast("Only customer accounts can place shop orders.", "error");
-      return;
-    }
-
-    const quantity = Number(orderForm.quantity) || 0;
-    if (quantity < 1) {
-      showToast("Quantity must be at least 1.", "error");
-      return;
-    }
-    try {
-      await api.post("/orders", {
-        shopItem: shopItemId,
-        quantity,
-        size: orderForm.size,
-        notes: orderForm.notes
-      });
-      showToast("Order placed successfully.");
-      setOpenOrderId("");
-      setOrderForm(defaultOrder);
-    } catch (err) {
-      showToast(err.response?.data?.message || "Failed to place order", "error");
-    }
+  const addToCart = (item) => {
+    addItemToCart({
+      shopItemId: item._id,
+      itemName: item.name,
+      imageUrl: item.imageUrl,
+      quantity: 1,
+      size: "",
+      notes: ""
+    });
+    setCartCount(getCart().length);
+    showToast("Added to cart.");
   };
 
   return (
     <div className="space-y-6">
       <div className="panel p-5">
         <h1 className="text-3xl font-bold">Ready-Made Shop</h1>
-        <p className="mt-1 text-slate-600">Browse items uploaded by the designer and place your order in minutes.</p>
+        <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
+          <p className="text-slate-600">Add items to cart, then confirm from your cart page.</p>
+          <button
+            onClick={() => {
+              if (!user) {
+                showToast("Please login to view your cart.");
+                navigate("/login");
+                return;
+              }
+              navigate("/cart");
+            }}
+            className="btn-primary"
+          >
+            View Cart ({cartCount})
+          </button>
+        </div>
       </div>
 
       {loading && (
@@ -92,25 +109,14 @@ const ShopPage = () => {
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         {items.map((item) => (
           <article key={item._id} className="panel card-hover overflow-hidden">
-            <img src={resolveImageUrl(item.imageUrl)} alt={item.name} className="h-72 w-full object-cover" />
+            <img src={resolveImageUrl(item.imageUrl)} alt={item.name} className="img-fit h-72 w-full" />
             <div className="space-y-2 p-4">
               <div className="flex items-start justify-between gap-2">
                 <h2 className="text-xl font-semibold">{item.name}</h2>
                 <span className="badge border-amber-200 bg-amber-50 text-amber-700">${item.price}</span>
               </div>
               <p className="text-sm text-slate-600">{item.description}</p>
-
-                <div className="space-y-3 pt-2">
-                <button onClick={() => onOrderClick(item._id)} className="btn-primary w-full">Order This Item</button>
-                {openOrderId === item._id && (
-                  <div className="space-y-2 rounded-xl border border-amber-200 bg-amber-50/70 p-3">
-                    <input className="field" placeholder="Size (e.g. M, L)" value={orderForm.size} onChange={(e) => setOrderForm((p) => ({ ...p, size: e.target.value }))} />
-                    <input className="field" type="number" min="1" value={orderForm.quantity} onChange={(e) => setOrderForm((p) => ({ ...p, quantity: e.target.value }))} />
-                    <textarea className="field" placeholder="Extra note (optional)" value={orderForm.notes} onChange={(e) => setOrderForm((p) => ({ ...p, notes: e.target.value }))} />
-                    <button onClick={() => placeOrder(item._id)} className="btn-primary w-full">Confirm Order</button>
-                  </div>
-                )}
-              </div>
+              <button onClick={() => addToCart(item)} className="btn-primary mt-2 w-full">Add to Cart</button>
             </div>
           </article>
         ))}

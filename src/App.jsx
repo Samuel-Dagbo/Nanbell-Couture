@@ -4,6 +4,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import HomePage from "./pages/HomePage";
 import TemplatesPage from "./pages/TemplatesPage";
 import ShopPage from "./pages/ShopPage";
+import CartPage from "./pages/CartPage";
 import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
 import LoginPage from "./pages/auth/LoginPage";
@@ -16,6 +17,7 @@ import AdminTemplatesPage from "./pages/admin/AdminTemplatesPage";
 import AdminShopItemsPage from "./pages/admin/AdminShopItemsPage";
 import AdminCustomersPage from "./pages/admin/AdminCustomersPage";
 import AdminOrdersPage from "./pages/admin/AdminOrdersPage";
+import AdminAboutContentPage from "./pages/admin/AdminAboutContentPage";
 
 const App = () => {
   return (
@@ -25,6 +27,7 @@ const App = () => {
           <Route path="/" element={<HomePage />} />
           <Route path="/templates" element={<TemplatesPage />} />
           <Route path="/shop" element={<ShopPage />} />
+          <Route path="/cart" element={<CartPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -76,6 +79,14 @@ const App = () => {
             element={
               <ProtectedRoute role="admin">
                 <AdminOrdersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/about-content"
+            element={
+              <ProtectedRoute role="admin">
+                <AdminAboutContentPage />
               </ProtectedRoute>
             }
           />
